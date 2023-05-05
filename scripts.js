@@ -48,6 +48,14 @@ document.querySelector(`[data-header-search]`).addEventListener('click',()=>{
 })
 
 
+document.querySelector(`[data-settings-cancel]`).addEventListener('click',()=>{
+    document.querySelector(`[data-settings-overlay]`).open = false 
+   })
+
+   
+
+
+
 // 2
 document.querySelector(`[data-search-cancel]`).addEventListener('click',()=>{ 
     document.querySelector(`[data-search-overlay]`).open = false 
@@ -66,19 +74,24 @@ document.querySelector(`[data-list-button]`).innerHTML = /* html */ `
 
 // 6
 document.querySelector(`[data-list-button]`).addEventListener('click', () => {
-    document.querySelector("[data-list-items]").appendChild(createPreviewsFragment(matches))
-    document.querySelector(`[data-list-button]`).innerHTML = `Show more (${books.length - (page *BOOKS_PER_PAGE)})`;
-    document.querySelector(`[data-list-button]`).disabled = !(matches.length - (page * BOOKS_PER_PAGE) > 0);
+    document.querySelector("[data-list-items]").appendChild(createPreviewsFragment(matches, (page * BOOKS_PER_PAGE), (page + 1) * BOOKS_PER_PAGE))
     
-    // if (matches.length - page * BOOKS_PER_PAGE <= 0) {
-    //     document.querySelector(`[data-list-button]`).disabled = true;
-    //     document.querySelector(`[data-list-button]`).textContent = `Show more (0)`;
-    // } else {
-    //     document.querySelector(`[data-list-button]`).disabled = false;
-    // }
+    const initial = matches.length - (page * BOOKS_PER_PAGE)
+    const hasRemaining = initial > BOOKS_PER_PAGE
+    const remaining = hasRemaining ? initial : 0
+    document.querySelector(`[data-list-button]`).disabled = initial > 0
 
+    document.querySelector(`[data-list-button]`).innerHTML = /* html */ `
+        <span>Show more</span>
+        <span class="list__remaining"> (${remaining})</span>
+    `
+
+    // window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.querySelector(`[data-search-overlay]`).open = false
 
 })
+
+
 
 // 7
 document.querySelector(`[data-settings-theme]`).value = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day';
@@ -148,43 +161,6 @@ document.querySelector(`[data-search-authors]`).appendChild(authorSection);
 
 
 
-/*******************************************************************/
-
-
-// document.querySelector(`[data-list-button]`).innerHTML = `Show more (${books.length - BOOKS_PER_PAGE})`;
-
-// document.querySelector(`[data-list-button]`).disabled = !(matches.length - (page * BOOKS_PER_PAGE) > 0);
-
-
-
-
-
-
-// event listed added
-
-/***************************************search overlay ******************************************** */
-
-
-
-document.querySelector(`[data-settings-cancel]`).addEventListener('click',()=>{
-     document.querySelector(`[data-settings-overlay]`).open = false 
-    //  document.querySelector('[data-search-form]').reset = true
-    })
-
-    
-
-/**********************************pagescroll********************************* */
-// added event listener
-document.querySelector(`[data-list-button]`).addEventListener('click',()=>{
-    document.querySelector(`[data-list-items]`).appendChild(createPreviewsFragment(matches, page * BOOKS_PER_PAGE,  (page + 1) * BOOKS_PER_PAGE))
-    actions.list.updateRemaining()
-    page = page + 1
-}) 
-
-
-
-
-
 // added event listener changed click to submit
 document.querySelector(`[data-search-form]`).addEventListener('submit',(event)=>{
     event.preventDefault();
@@ -204,54 +180,15 @@ document.querySelector(`[data-search-form]`).addEventListener('submit',(event)=>
         }
     };
 
-        if (display.length < 1){
+       if (display.length < 1){
             document.querySelector(`[data-list-message]`).classList.add('list__message_show')
         }
         else {
             document.querySelector(`[data-list-message`).classList.remove('list__message_show')
-            document.querySelector(`[data-list-message]`).classList.remove('list__message_show');
+            
         }
         
     
-    document.querySelector(`[data-list-items]`).innerHTML = ''
-    const fragment = document.createDocumentFragment()
-    const extracted = source.slice(range[0], range[1])
-
-    // for ({ author, image, title, id }; extracted; i++) {
-    //     const { author: authorId, id, image, title } = props
-
-    //     element = document.createElement('button')
-    //     element.classList = 'preview'
-    //     element.setAttribute('data-preview', id)
-
-    //     element.innerHTML = /* html */ `
-    //         <img
-    //             class="preview__image"
-    //             src="${image}"
-    //         />
-            
-    //         <div class="preview__info">
-    //             <h3 class="preview__title">${title}</h3>
-    //             <div class="preview__author">${authors[authorId]}</div>
-    //         </div>
-    //     `
-
-    //     fragment.appendChild(element)
-    // }
-    
-    document.querySelector(`[data-list-items]`).appendChild(fragment)
-    const initial = matches.length - (page * BOOKS_PER_PAGE)
-    const hasRemaining = initial > BOOKS_PER_PAGE
-    const remaining = hasRemaining ? initial : 0
-    document.querySelector(`[data-list-button]`).disabled = initial > 0
-
-    document.querySelector(`[data-list-button]`).innerHTML = /* html */ `
-        <span>Show more</span>
-        <span class="list__remaining"> (${remaining})</span>
-    `
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    document.querySelector(`[data-search-overlay]`).open = false
 }) 
 /******************************************************************/
 document.querySelector(`[data-settings-overlay]`).addEventListener('submit', (event)=>
@@ -285,3 +222,6 @@ document.querySelector(`[data-list-items]`).addEventListener('click',(event)=>{
     document.querySelector(`[data-list-subtitle]`) === `${authors[active.author]} (${Date(active.published).year})`
     document.querySelector(`[data-list-description]`) === active.description
 }) 
+
+
+showPreview()
