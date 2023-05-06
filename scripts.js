@@ -1,3 +1,4 @@
+/**importing necessary values from data.js and functions.js. These values include the number of books to display per page, information about authors and genres, and functions to create book previews and preview fragments, as well as an object containing selectors for HTML elements */
 import {
     BOOKS_PER_PAGE,
     authors,
@@ -5,15 +6,21 @@ import {
     books
 } from './data.js'
 
-import { createPreview , createPreviewsFragment} from './functions.js';
+import { createPreview , createPreviewsFragment, htmlSelector} from './functions.js';
 
+
+/* sets the initial range of books to display and retrieves all books as the initial matches */
 const range = [0,BOOKS_PER_PAGE];
 const matches = books
 let page = 1;
 
+
+// checks if the books array exists and is an array, and throws an error if either condition is not met.
+
 if (!books || !Array.isArray(books)) throw new Error('Source required') 
 if (!range || range.length < 2) throw new Error('Range must be an array with two numbers')
 
+// sets up an object containing color values for a light and dark theme
 const css = {
     day: {
       dark: '10, 10, 20',
@@ -25,9 +32,16 @@ const css = {
     },
 };
 
+
+
+// empty document fragment and extracts the first 36 books from the books array.
+
 const fragment = document.createDocumentFragment()
 export const extracted = books.slice(0, 36)
 
+
+
+// iterates over the extracted books, creates a preview for each one using the createPreview function, and appends each preview to the fragment
 
 for (const { author, image, title, id } of extracted) {
     const preview = createPreview({
@@ -37,68 +51,105 @@ for (const { author, image, title, id } of extracted) {
         title
     })
 
+    console.log(preview)
     fragment.appendChild(preview)
-}
-document.querySelector(`[data-list-items]`).appendChild(fragment)
 
-// 1 search button
-document.querySelector(`[data-header-search]`).addEventListener('click',()=>{
-    document.querySelector(`[data-search-overlay]`).open = true ;
-    document.querySelector(`[data-search-title]`).focus();
+}
+// block appends the fragment containing the book previews to the HTML element with the data-list-items attribute.
+htmlSelector.listItems.appendChild(fragment)
+
+/* ************************************************Eventlistener ************************************************/
+
+
+// Adds an event listener to the header search element. When clicked, it sets the search overlay to be open and focuses on the search title input field.
+htmlSelector.headerSearch.addEventListener('click',()=>{
+    htmlSelector.searchOverlay.open = true ;
+    htmlSelector.searchTitle.focus();
+
 })
 
 
-document.querySelector(`[data-settings-cancel]`).addEventListener('click',()=>{
-    document.querySelector(`[data-settings-overlay]`).open = false 
+
+//Adds an event listener to the search cancel element. When clicked, it sets the search overlay to be closed.
+
+htmlSelector.settingsCancel.addEventListener('click',()=>{
+    htmlSelector.settingsOverlay.open = false 
+    
    })
 
-   
+
+// htmlSelector.searchCancel.addEventListener('click',()=>{ 
+//     htmlSelector.searchOverlay.open = false 
+// })
 
 
 
-// 2
-document.querySelector(`[data-search-cancel]`).addEventListener('click',()=>{ 
-    document.querySelector(`[data-search-overlay]`).open = false 
+//Adds an event listener to the header settings element. When clicked, it sets the settings overlay to be open.
+htmlSelector.headerSettings.addEventListener('click', (event) => {
+    htmlSelector.settingsOverlay.open = true;
 })
 
-// 3
-document.querySelector("[data-header-settings]").addEventListener('click', (event) => {
-    document.querySelector("[data-settings-overlay]").open = true;
-})
 
-// 4
-document.querySelector(`[data-list-button]`).innerHTML = /* html */ `
+
+// 4 ******show more button**********
+htmlSelector.listButton.innerHTML = /* html */ `
     <span>Show more</span>
-    <span class="list__remaining"> (${matches.length - (page * BOOKS_PER_PAGE) > 0 ? matches.length - (page * BOOKS_PER_PAGE) : 0})</span>
+    <span class="list__remaining"> (${(matches.length - (page * BOOKS_PER_PAGE)) > 0 ? (matches.length - (page * BOOKS_PER_PAGE)) : 0})</span>
 `
 
 // 6
-document.querySelector(`[data-list-button]`).addEventListener('click', () => {
-    document.querySelector("[data-list-items]").appendChild(createPreviewsFragment(matches, (page * BOOKS_PER_PAGE), (page + 1) * BOOKS_PER_PAGE))
-    
-    const initial = matches.length - (page * BOOKS_PER_PAGE)
-    const hasRemaining = initial > BOOKS_PER_PAGE
-    const remaining = hasRemaining ? initial : 0
-    document.querySelector(`[data-list-button]`).disabled = initial > 0
+//This block of code sets the innerHTML of the list button element to display the text "Show more" and the remaining number of books that can be displayed. The remaining number is calculated by subtracting the number of books displayed on the current page (page * BOOKS_PER_PAGE) from the total number of books. If this number is negative, it is replaced with 0.
 
-    document.querySelector(`[data-list-button]`).innerHTML = /* html */ `
+htmlSelector.listButton.addEventListener('click', () => {
+    htmlSelector.listItems.appendChild(createPreviewsFragment(matches, (page * BOOKS_PER_PAGE), (page + 1) * BOOKS_PER_PAGE))
+  
+    page = page + 1
+    let remainingBooks = matches.length - (page * BOOKS_PER_PAGE)
+  
+    // Iterate over the books in the current page and decrement the "remainingBooks" counter for each book
+    for (const book of matches.slice(page * BOOKS_PER_PAGE, (page + 1) * BOOKS_PER_PAGE)) {
+      remainingBooks = remainingBooks - 1
+    }
+  
+
+    // Determine whether there are more books remaining after the current page
+    const hasRemainingBooks = remainingBooks > 0
+    const remaining = hasRemainingBooks ? remainingBooks : 0
+  
+
+    // If there are no more books remaining to display, disable the "listButton" element, close the "searchOverlay", and scroll to the top of the page
+    if (remaining < 1) {
+      htmlSelector.listButton.disabled = true
+      htmlSelector.searchOverlay.open = false
+
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      htmlSelector.listButton.innerHTML = /* html */ `
         <span>Show more</span>
         <span class="list__remaining"> (${remaining})</span>
-    `
-
-    // window.scrollTo({ top: 0, behavior: 'smooth' });
-    document.querySelector(`[data-search-overlay]`).open = false
-
-})
+      `
 
 
+    } else {
 
-// 7
-document.querySelector(`[data-settings-theme]`).value = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day';
+    // If there are more books remaining to display, update the text of the "listButton" element to show the remaining number of books
+      htmlSelector.listButton.innerHTML = /* html */ `
+        <span>Show more</span>
+        <span class="list__remaining"> (${remaining})</span>
+      `
+    }
+  })
+
+
+
+//sets the initial value of the settingsTheme select element to either 'night' or 'day', depending on whether the user's device has a dark mode preference or not.
+htmlSelector.settingsTheme.value = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'day';
 let theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches? 'night' : 'day';
 
-// 8
-document.querySelector(`[data-settings-form]`).addEventListener('submit',(event)=>{
+
+// The settingsForm event listener listens for a form submission event, and then prevents the default form submission behavior. It then extracts the form data, which should contain a theme key-value pair representing the user's selected theme. Based on the selected theme, it sets the CSS variables --color-dark and --color-light to the appropriate values from the css object. Finally, it closes the settings overlay.
+
+
+htmlSelector.settingsForm.addEventListener('submit',(event)=>{
     event.preventDefault();
 
     const formData = new FormData(event.target);
@@ -107,17 +158,19 @@ document.querySelector(`[data-settings-form]`).addEventListener('submit',(event)
 
     if (selected.theme === 'night') {
         document.documentElement.style.setProperty('--color-dark', css[selected.theme].dark);
-document.documentElement.style.setProperty('--color-light', css[selected.theme].light);       
+        document.documentElement.style.setProperty('--color-light', css[selected.theme].light);       
     } else if (selected.theme === 'day') {
         document.documentElement.style.setProperty('--color-dark', css[selected.theme].dark);
-document.documentElement.style.setProperty('--color-light', css[selected.theme].light);
+        document.documentElement.style.setProperty('--color-light', css[selected.theme].light);
     };
 
-    document.querySelector('[data-settings-overlay]').close();
+    htmlSelector.settingsOverlay.close();
     }) 
 
-document.querySelector(`[data-list-close]`).addEventListener('click',()=>{ 
-    document.querySelector(`[data-list-active]`).open = false }
+
+    // The listClose event listener listens for a click event on the list close button, and then closes the active list element by setting its open attribute to false.
+    htmlSelector.listClose.addEventListener('click',()=>{ 
+    htmlSelector.listActive.open = false }
     
     ) 
 
@@ -125,8 +178,9 @@ document.querySelector(`[data-list-close]`).addEventListener('click',()=>{
 /*_______________________search_____________________________*/
 
 // 9
-/*_________________________genre_______________________________*/
 
+// creates a document fragment for genres and authors, and then creates options for each genre and author using a for loop and appends them to their respective sections. 
+/*_________________________genre_______________________________*/
 let genreSection = document.createDocumentFragment()
 let element = document.createElement('option')
 element.value = 'any'
@@ -140,7 +194,7 @@ for (const [id, name] of Object.entries(genres)) {
     genreSection.appendChild(element)
 }
 
-document.querySelector(`[data-search-genres]`).appendChild(genreSection)
+htmlSelector.searchGenres.appendChild(genreSection)
 
 
 /*_____________________________authors _____________________________ */
@@ -157,71 +211,66 @@ for (const [id, name]of Object.entries(authors)) {
     authorSection.appendChild(element)
 }
 
-document.querySelector(`[data-search-authors]`).appendChild(authorSection);
+htmlSelector.searchAuthors.appendChild(authorSection);
 
+// Adds an event listener to the search form's submit event. It prevents the default form submission action, retrieves the form data, and filters the books array based on the form data. It then populates the resulting array to the page using createPreview and createPreviewsFragment functions
 
-
-// added event listener changed click to submit
-document.querySelector(`[data-search-form]`).addEventListener('submit',(event)=>{
+htmlSelector.searchForm.addEventListener('submit',(event)=>{
     event.preventDefault();
     const formData = new FormData(event.target)
     const filters = Object.fromEntries(formData)
-    result = []
-
+    let result = []
 
     for (let i =0 ;i < books.length; i++) {
         let titleMatch = filters.title.trim() === '' || books[i].title.toLowerCase().includes(filters.title.toLowerCase())
         let authorMatch = filters.author === 'any' || books[i].author === filters.author
-        let genreMatch = filters.genre === 'any' || books[i].genres.includes(filters.genre); // check if the book's genres include the selected genre
-
+        let genreMatch = filters.genre === 'any' || books[i].genres.includes(filters.genre)
 
         if(titleMatch && authorMatch && genreMatch){
-            result.push(books)
+            result.push(books[i])
         }
     };
 
-       if (display.length < 1){
-            document.querySelector(`[data-list-message]`).classList.add('list__message_show')
-        }
-        else {
-            document.querySelector(`[data-list-message`).classList.remove('list__message_show')
-            
-        }
-        
-    
-}) 
-/******************************************************************/
-document.querySelector(`[data-settings-overlay]`).addEventListener('submit', (event)=>
-{
-    preventDefault()
-    const formData = new FormData(event.target)
-    const result = Object.fromEntries(formData)
-    document.documentElement.style.setProperty('--color-dark', css[result.theme].dark);
-    document.documentElement.style.setProperty('--color-light', css[result.theme].light);
-    document.querySelector(`[data-settings-overlay]`).open === false
-})
-
-document.querySelector(`[data-list-items]`).addEventListener('click',(event)=>{
-    let pathArray = Array.from(event.path || event.composedPath())
-    active;
-
-    for (node of pathArray) {
-        if (active) break;
-        const previewId = node?.dataset?.preview
-    
-        for (const singleBook of books) {
-            if (singleBook.id === id) active = singleBook
-        } 
+    if (result.length < 1){
+        htmlSelector.listMessage.classList.add('list__message_show')
+    } else {
+        htmlSelector.listMessage.classList.remove('list__message_show')
     }
-    
-    if (!active) return
-    document.querySelector(`[data-list-active]`).open = true
-    document.querySelector(`[data-list-blur]`) + document.querySelector(`[data-list-image]`) === active.image
-    document.querySelector(`[data-list-title]`) === active.title
-    
-    document.querySelector(`[data-list-subtitle]`) === `${authors[active.author]} (${Date(active.published).year})`
-    document.querySelector(`[data-list-description]`) === active.description
-}) 
+});
 
 
-showPreview()
+
+// This code block adds an event listener to the book preview elements in the book list. When the user clicks on a book preview, it retrieves the book information and populates the book details section with the information
+
+htmlSelector.listItems.addEventListener('click', (event) => {
+    // Get an array of the path nodes of the clicked element
+    const pathArray = Array.from(event.path || event.composedPath())
+  
+    let active = null // Initialize the active book variable to null
+  
+    // Loop through the path nodes and try to find the clicked book preview element
+    for (const node of pathArray) {
+      const previewId = node?.dataset?.preview
+  
+      // Loop through the books array to find the book with the matching ID
+      for (const book of books) {
+        if (book.id === previewId) {
+          active = book // Set the active book variable
+          break // Exit the loop once the book is found
+        }
+      }
+  
+      if (active) break // Exit the loop once the active book is found
+    }
+  
+    if (!active) return // Return if the active book is not found
+  
+    // Set the values of the book details section elements
+    document.querySelector('[data-list-active]').open = true
+    document.querySelector('[data-list-blur]').src = active.image
+    document.querySelector('[data-list-image]').src = active.image
+    document.querySelector('[data-list-title]').textContent = active.title
+    document.querySelector('[data-list-subtitle]').textContent = `${authors[active.author]} (${new Date(active.published).getFullYear()})`
+    document.querySelector('[data-list-description]').textContent = active.description
+  })
+  
