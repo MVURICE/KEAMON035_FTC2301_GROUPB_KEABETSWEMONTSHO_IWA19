@@ -36,6 +36,7 @@ createPreview - creates a preview element for a book with the given props
 */
 
 export const createPreview = (props) => {
+    
     const { author: authorId, id, image, title } = props
 
     let element = document.createElement('button')
@@ -81,7 +82,6 @@ export const createPreviewsFragment  = (array , start, end) => {
     for (let book of extracted){
 
         let { author, image, title, id } = book;
-        author = author[author];
     
         const preview = createPreview( {
             author,
