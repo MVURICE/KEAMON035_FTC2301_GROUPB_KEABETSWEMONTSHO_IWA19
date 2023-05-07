@@ -26,7 +26,6 @@ export const htmlSelector ={
 }
 
 /**
-
 createPreview - creates a preview element for a book with the given props
 @param {Object} props - an object with properties of the book, including author, id, image, and title
 @param {string} props.author - the id of the book's author in the authors object
