@@ -103,11 +103,12 @@ htmlSelector.listButton.addEventListener('click', () => {
       htmlSelector.listButton.disabled = true
       htmlSelector.searchOverlay.open = false
 
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      
       htmlSelector.listButton.innerHTML = /* html */ `
         <span>Show more</span>
         <span class="list__remaining"> (${remaining})</span>
       `
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } else {
       htmlSelector.listButton.innerHTML = /* html */ `
         <span>Show more</span>
@@ -157,7 +158,7 @@ element.textContent = 'All Genres'
 genreSection.appendChild(element)
 
 for (const [id, name] of Object.entries(genres)) {
-    document.createElement('option')
+    element = document.createElement('option')
     element.value = id
     element.innerText = name
     genreSection.appendChild(element)
@@ -172,7 +173,7 @@ element.innerText = 'All Authors'
 authorSection.appendChild(element)
 
 for (const [id, name]of Object.entries(authors)) {
-    document.createElement('option')
+    element = document.createElement('option')
     element.value = id
     element.innerText = name
     authorSection.appendChild(element)
