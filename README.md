@@ -1,4 +1,4 @@
-## Book Connect WEB application
+# Book Connect WEB application
 This web application displays a collection of books on a webpage and allows users to search and browse through them. The application is built using HTML, CSS, and JavaScript and makes use of various modules and functions to manipulate HTML elements on the page.
 
 ## Setup
@@ -22,6 +22,6 @@ The application allows users to customize the color scheme of the page using a s
 
 KEABETSWE MAURICE MONTSHO
 
-## liNK FOR PRESENATION
+## lINK FOR PRESENATION
 
 https://docs.google.com/presentation/d/1j8rqKBFvwocaeycq3U6yMbAzHX2XRPv3fjUe8vIXjW4/edit?usp=sharing
